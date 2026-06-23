@@ -153,6 +153,8 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
       <div class="nav-item" onclick="navTo('ml')">🤖 ML Concepts <span class="nav-count" id="cnt-ml">0</span></div>
       <div class="nav-item" onclick="navTo('stats')">📊 Stats & Math <span class="nav-count" id="cnt-stats">0</span></div>
       <div class="nav-item" onclick="navTo('ds-case')">🧪 DS Cases <span class="nav-count" id="cnt-ds-case">0</span></div>
+      <div class="nav-item" onclick="navTo('ds-term')">📖 DS Terms <span class="nav-count" id="cnt-ds-term">0</span></div>
+      <div class="nav-item" onclick="navTo('behavioral')">🎯 DS Behavioral <span class="nav-count" id="cnt-behavioral">0</span></div>
     </div>
   </aside>
 
@@ -238,54 +240,29 @@ html, body { height: 100%; background: var(--bg); color: var(--text); font-famil
 </div>
 
 <script>
+
 // ═══════════════════════════════════════════════
-// QUESTION BANK
+// QUESTION FILES MAP
 // ═══════════════════════════════════════════════
-const QUESTIONS = [
-  // ── DA: SQL / Python ──
-  { id:1, role:'da', type:'sql', level:'junior', en:'Find the 7-day conversion rate. Explain your logic step by step.', uk:'Знайди 7-денну конверсію. Поясни логіку крок за кроком.', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:2, role:'da', type:'sql', level:'junior', en:'Calculate average order value per user for the last 30 days.', uk:'Порахуй середній чек на користувача за 30 днів.', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:3, role:'da', type:'sql', level:'junior', en:'Funnel analysis: signup → login → first purchase. How do you calculate step-by-step conversion?', uk:'Воронка: реєстрація → логін → перша покупка. Як рахуєш конверсію кожного кроку?', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:4, role:'da', type:'sql', level:'junior', en:'Find Day-7 retention. What tables, what logic?', uk:'Day-7 retention. Які таблиці, яка логіка?', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:5, role:'da', type:'sql', level:'middle', en:'Find users who made a second purchase within 30 days of their first.', uk:'Знайди юзерів з другою покупкою впродовж 30 днів після першої.', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:6, role:'da', type:'sql', level:'middle', en:'Two dashboards show different revenue for the same month. How do you debug it?', uk:'Два дашборди — різний дохід за той самий місяць. Як дебажиш?', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:7, role:'da', type:'sql', level:'middle', en:'Calculate MoM revenue growth rate by channel using window functions.', uk:'MoM зростання доходу по каналах. Використай window functions.', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
-  { id:8, role:'da', type:'sql', level:'middle', en:'Top 3 revenue products per country — handle ties correctly.', uk:'Топ-3 продукти за доходом по країнах — правильно обробити ties.', framework:'SQL Thinking', steps:['Define grain','Identify event','Choose method','Build logic','Business answer'] },
+const Q_FILES = {
+  da: {
+    en: ['/questions/da-sql-en.json','/questions/da-product-en.json','/questions/da-behavioral-en.json','/questions/da-term-en.json'],
+    uk: ['/questions/da-sql-uk.json','/questions/da-product-uk.json','/questions/da-behavioral-uk.json','/questions/da-term-uk.json'],
+  },
+  ds: {
+    en: ['/questions/ds-ml-en.json','/questions/ds-stats-en.json','/questions/ds-cases-en.json','/questions/ds-term-en.json','/questions/ds-behavioral-en.json'],
+    uk: ['/questions/ds-ml-uk.json','/questions/ds-stats-uk.json','/questions/ds-cases-uk.json','/questions/ds-term-uk.json','/questions/ds-behavioral-uk.json'],
+  }
+};
 
-  // ── DA: Product Cases ──
-  { id:13, role:'da', type:'product', level:'junior', en:'Revenue dropped 18% WoW. Traffic is stable. Walk me through your investigation.', uk:'Дохід впав на 18% WoW. Трафік стабільний. Поясни розслідування.', framework:'VDSHV', steps:['Validate','Decompose','Segment','Hypothesize','Validate hyp.'] },
-  { id:14, role:'da', type:'product', level:'junior', en:'Conversion dropped from 5% to 3.8%. No releases reported. What do you do?', uk:'Конверсія впала з 5% до 3.8%. Релізів не було. Що робиш?', framework:'VDSHV', steps:['Validate','Decompose','Segment','Hypothesize','Validate hyp.'] },
-  { id:15, role:'da', type:'product', level:'junior', en:'Traffic up 30%, revenue flat. Explain what happened.', uk:'Трафік +30%, дохід не змінився. Поясни що сталося.', framework:'VDSHV', steps:['Validate','Decompose','Segment','Hypothesize','Validate hyp.'] },
-  { id:16, role:'da', type:'product', level:'junior', en:'Monthly churn increased from 4% to 7%. How do you investigate?', uk:'Churn виріс з 4% до 7%. Як розслідуєш?', framework:'VDSHV', steps:['Validate','Decompose','Segment','Hypothesize','Validate hyp.'] },
-  { id:17, role:'da', type:'product', level:'middle', en:'Revenue up and churn up after a pricing change. Analyze the trade-off.', uk:'Після зміни цін дохід виріс і churn виріс. Аналізуй trade-off.', framework:'VDSHV', steps:['Validate','Decompose','Segment','Hypothesize','Validate hyp.'] },
+let QUESTIONS = [];
 
-  // ── DA: Behavioral ──
-  { id:23, role:'da', type:'behavioral', level:'junior', en:'Tell me about a mistake you made in your analysis or reporting.', uk:'Розкажи про помилку в аналізі або звітності.', framework:'STAR', steps:['Situation','Task','Action','Result'] },
-  { id:24, role:'da', type:'behavioral', level:'junior', en:'Tell me about a time your analysis changed a business decision.', uk:'Коли твій аналіз змінив бізнес-рішення.', framework:'STAR', steps:['Situation','Task','Action','Result'] },
-  { id:25, role:'da', type:'behavioral', level:'junior', en:'Describe a disagreement with a stakeholder about data or metrics.', uk:'Незгода зі стейкхолдером щодо даних або метрик.', framework:'STAR', steps:['Situation','Task','Action','Result'] },
-  { id:26, role:'da', type:'behavioral', level:'junior', en:'Tell me about explaining a complex analysis to a non-technical audience.', uk:'Як пояснював складний аналіз нетехнічній аудиторії.', framework:'STAR', steps:['Situation','Task','Action','Result'] },
-  { id:51, role:'da', type:'behavioral', level:'junior', en:'What is the project you are most proud of?', uk:'Яким проектом ти найбільше пишаєшся?', framework:'STAR', steps:['Situation','Task','Action','Result'] },
-
-  // ── DA: Terminology ──
-  { id:201, role:'da', type:'term', level:'junior', en:'What is Conversion Rate?', uk:'Що таке коефіцієнт конверсії (Conversion Rate)?', framework:'Term', steps:['Definition','Formula','Business Value','Example'] },
-  { id:203, role:'da', type:'term', level:'junior', en:'What is LTV (Lifetime Value)?', uk:'Що таке LTV?', framework:'Term', steps:['Definition','Calculation','Retention link','LTV:CAC ratio'] },
-  { id:205, role:'da', type:'term', level:'junior', en:'What is Churn Rate?', uk:'Що таке Churn Rate?', framework:'Term', steps:['Definition','Formula','Impact on LTV','Prevention'] },
-  { id:207, role:'da', type:'term', level:'junior', en:'What is MRR (Monthly Recurring Revenue)?', uk:'Що таке MRR?', framework:'Term', steps:['Definition','Importance for SaaS','Growth tracking','Example'] },
-  { id:222, role:'da', type:'term', level:'junior', en:'What is a North Star Metric?', uk:'Що таке North Star Metric?', framework:'Term', steps:['Definition','Selection criteria','Alignment','Examples'] },
-  { id:231, role:'da', type:'term', level:'middle', en:'What is Simpson\'s Paradox?', uk:'Що таке парадокс Сімпсона?', framework:'Stats', steps:['Intuition','Example','Dangers','Segment analysis'] },
-
-  // ── DS: ML Concepts ──
-  { id:301, role:'ds', type:'ml', level:'junior', en:'What is overfitting and how do you prevent it?', uk:'Що таке overfitting і як його запобігти?', framework:'ML Concept', steps:['Definition','Causes','Detection','Prevention'] },
-  { id:302, role:'ds', type:'ml', level:'junior', en:'Explain the bias-variance tradeoff.', uk:'Поясни bias-variance tradeoff.', framework:'ML Concept', steps:['Intuition','Bias','Variance','Tradeoff in practice'] },
-
-  // ── DS: Stats & Math ──
-  { id:401, role:'ds', type:'stats', level:'junior', en:'What is p-value and how do you interpret it?', uk:'Що таке p-value і як його інтерпретувати?', framework:'Stats', steps:['Intuition','H0 and H1','Threshold','Mistakes'] },
-  { id:402, role:'ds', type:'stats', level:'middle', en:'What is the Central Limit Theorem and why does it matter?', uk:'Що таке центральна гранична теорема і чому вона важлива?', framework:'Stats', steps:['Definition','Intuition','Sample size','Applications'] },
-
-  // ── DS: DS Cases ──
-  { id:501, role:'ds', type:'ds-case', level:'junior', en:'How would you build a churn prediction model from scratch?', uk:'Як побудувати модель прогнозування відтоку з нуля?', framework:'ML Pipeline', steps:['Define problem','Data & features','Model choice','Evaluation','Deployment'] },
-  { id:502, role:'ds', type:'ds-case', level:'middle', en:'You trained a model with 95% accuracy but stakeholders are unhappy. Why might this be?', uk:'Модель має 95% accuracy але стейкхолдери незадоволені. Чому?', framework:'ML Evaluation', steps:['Check baseline','Class imbalance','Business metric','Error analysis','Recommendation'] },
-];
+async function loadQuestions(role, lang) {
+  const files = Q_FILES[role]?.[lang] || [];
+  const results = await Promise.allSettled(files.map(f => fetch(f).then(r => r.ok ? r.json() : [])));
+  QUESTIONS = results.flatMap(r => r.status === 'fulfilled' ? r.value : []);
+  updateCounts();
+}
 
 // ═══════════════════════════════════════════════
 // STATE
@@ -295,7 +272,7 @@ const S = {
   category: 'all',
   lang: 'en',
   currentQ: null,
-  dialogHistory: [],   // [{user, assistant}]
+  dialogHistory: [],
   followupCount: 0,
   isRecording: false,
   mediaRecorder: null,
@@ -316,6 +293,7 @@ const CAT_CONFIG = {
     { id:'ml', label:'ML Concepts' },
     { id:'stats', label:'Stats & Math' },
     { id:'ds-case', label:'DS Cases' },
+    { id:'ds-term', label:'Terminology' },
     { id:'behavioral', label:'Behavioral' },
   ]
 };
@@ -353,9 +331,10 @@ function selectLang(l) {
   document.getElementById('lang-uk').classList.toggle('sel', l === 'uk');
 }
 
-function startSession() {
+async function startSession() {
   document.getElementById('start-screen').style.display = 'none';
   updateTopbar();
+  await loadQuestions(S.role, S.lang);
   loadQuestion();
 }
 
@@ -388,7 +367,12 @@ function updateTopbar() {
 // QUESTIONS
 // ═══════════════════════════════════════════════
 function getPool() {
-  let pool = QUESTIONS.filter(q => q.role === S.role || q.type === 'behavioral');
+  // questions from files already filtered by role+lang
+  // text field used (from JSON), fallback to en/uk for old inline format
+  let pool = QUESTIONS.map(q => ({
+    ...q,
+    text: q.text || q[S.lang] || q.en || ''
+  }));
   if (S.category !== 'all') pool = pool.filter(q => q.type === S.category);
   return pool;
 }
@@ -402,7 +386,7 @@ function loadQuestion() {
 
   // Render question
   document.getElementById('q-badge').textContent = S.currentQ.type.toUpperCase();
-  document.getElementById('q-text').textContent = S.currentQ[S.lang] || S.currentQ.en;
+  document.getElementById('q-text').textContent = S.currentQ.text || S.currentQ[S.lang] || S.currentQ.en;
   document.getElementById('fw-label').textContent = S.currentQ.framework || 'Framework';
 
   const stepsEl = document.getElementById('fw-steps');
@@ -426,7 +410,7 @@ function loadQuestion() {
 function nextQuestion() { loadQuestion(); }
 
 function updateCounts() {
-  const types = ['sql','product','behavioral','term','ml','stats','ds-case'];
+  const types = ['sql','product','behavioral','term','ml','stats','ds-case','ds-term'];
   document.getElementById('cnt-all').textContent = QUESTIONS.length;
   types.forEach(t => {
     const el = document.getElementById('cnt-' + t);
@@ -527,7 +511,8 @@ async function submitAnswer() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        question: S.currentQ[S.lang] || S.currentQ.en,
+        question: S.currentQ.text || S.currentQ[S.lang] || S.currentQ.en,
+        questionType: S.currentQ.type || 'term',
         answer,
         history: S.dialogHistory,
         lang: S.lang,
@@ -643,9 +628,9 @@ window.GROQ_KEY = '';
 // ═══════════════════════════════════════════════
 // INIT
 // ═══════════════════════════════════════════════
-window.onload = () => {
+window.onload = async () => {
   renderCatGrid();
-  updateCounts();
+  await loadQuestions('da', 'en');
 };
 </script>
 </body>
