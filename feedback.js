@@ -151,13 +151,16 @@ JSON structure:
 function getSystemPrompt(questionType) {
   switch(questionType) {
     case 'term':
-    case 'ds-term':    return PROMPT_ZERO_SHOT;
+    case 'ds-term':
+    case 'ai-term':    return PROMPT_ZERO_SHOT;
     case 'behavioral': return PROMPT_FEW_SHOT;
-    case 'product':    return PROMPT_COT;
+    case 'product':
+    case 'ai-case':    return PROMPT_COT;
     case 'sql':
     case 'ml':
     case 'stats':      return PROMPT_ROLE;
-    case 'ds-case':    return PROMPT_STRUCTURED;
+    case 'ds-case':
+    case 'ai-design':  return PROMPT_STRUCTURED;
     default:           return PROMPT_ZERO_SHOT;
   }
 }
@@ -168,7 +171,7 @@ module.exports = async function handler(req, res) {
   const ip = req.headers['x-forwarded-for'] || 'unknown';
   if (!checkRate(ip)) return res.status(429).json({ error: 'Too many requests. Please slow down.' });
 
-  const { question, answer, history = [], lang = 'en', followupCount = 0, questionType = 'term' } = req.body;
+  const { question, answer, history = [], lang = 'en', followupCount = 0, questionType = 'term', forceScore = false } = req.body;
 
   // Security guard: input validation
   if (!answer || typeof answer !== 'string' || answer.trim().length < 5)
@@ -179,6 +182,9 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: 'Question is required' });
 
   const systemPrompt = getSystemPrompt(questionType);
+  const forceInstruction = forceScore ? '
+
+IMPORTANT: The user wants final evaluation NOW. Set mode="final" regardless of answer quality.' : '';
 
   const messages = [];
   if (history.length === 0) {
@@ -211,7 +217,7 @@ module.exports = async function handler(req, res) {
         model: 'llama-3.3-70b-versatile',
         temperature: 0.4,
         max_tokens: 800,
-        messages: [{ role: 'system', content: systemPrompt }, ...messages],
+        messages: [{ role: 'system', content: systemPrompt + forceInstruction }, ...messages],
         response_format: { type: 'json_object' },
       }),
     });
